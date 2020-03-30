@@ -1,5 +1,6 @@
 <?php
 
+require_once('iMode.php');
 
 class colorChange implements iMode
 {
