@@ -236,10 +236,9 @@ class LedController extends IPSModule
     public function SetColor($colors) {
         $colorBuffer = [];
         foreach ($colors as $c) {
-            IPS_LogMessage("LedController", json_encode($c));
-            $buffer[] = $c->blue;
-            $buffer[] = $c->green;
-            $buffer[] = $c->red;
+            $colorBuffer[] = $c->blue;
+            $colorBuffer[] = $c->green;
+            $colorBuffer[] = $c->red;
         }
 
         $this->ForwardData("COMMAND_EXECUTE_SETALL\n");
