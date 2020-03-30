@@ -2,6 +2,7 @@
 
 require_once('modes/off.php');
 require_once('modes/color.php');
+require_once('modes/colorChange.php.php');
 require_once('iAdapter.php');
 
 class LedController extends IPSModule implements iAdapter
@@ -18,12 +19,15 @@ class LedController extends IPSModule implements iAdapter
 
         $this->modes = [
             new off(),
-            new color()
+            new color(),
+            new colorChange()
         ];
 
         foreach ($this->modes as $mode) {
             $mode->initialize($this);
         }
+
+        $this->RegisterTimer('Schedule', 0, 'LEDC_Interval($_IPS[\'TARGET\'], 0);');
     }
 
     public function Create()
@@ -81,6 +85,8 @@ class LedController extends IPSModule implements iAdapter
         if($this->activeMode) {
             $this->activeMode->stop();
             $this->activeMode = null;
+            $this->SetTimerInterval('Schedule', 0);
+            $this->scheduleFunction = null;
         }
 
         $this->activeMode = $mode;
@@ -97,12 +103,40 @@ class LedController extends IPSModule implements iAdapter
         throw new Error("Mode not found");
     }
 
-    public function SetColor($red, $green, $blue) {
+    public function SetBatch($red, $green, $blue) {
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
         IPS_Sleep(1);
 
         $colorBuffer = array($blue, $green, $red);
         $this->ForwardData(implode(array_map("chr", $colorBuffer)));
         IPS_Sleep(5);
+    }
+
+    public function SetColor($colors) {
+        $colorBuffer = [];
+        foreach ($colors as $c) {
+            $buffer[] = $c['blue'];
+            $buffer[] = $c['green'];
+            $buffer[] = $c['red'];
+        }
+
+        $this->ForwardData("COMMAND_EXECUTE_SETALL\n");
+        IPS_Sleep(1);
+
+        $this->ForwardData(implode(array_map("chr", $colorBuffer)));
+        IPS_Sleep(35);
+    }
+
+    private $scheduleFunction;
+    public function Schedule($interval, $function)
+    {
+        $this->scheduleFunction = $function;
+        $this->SetTimerInterval('Schedule', $$interval);
+    }
+
+    public function Interval() {
+        if($this->scheduleFunction) {
+            $this->scheduleFunction();
+        }
     }
 }

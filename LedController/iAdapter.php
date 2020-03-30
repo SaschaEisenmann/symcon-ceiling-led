@@ -2,5 +2,9 @@
 
 interface iAdapter
 {
-    public function SetColor($red, $green, $blue);
+    public function SetBatch($red, $green, $blue);
+
+    public function SetColor($colors);
+
+    public function Schedule($interval, $function);
 }

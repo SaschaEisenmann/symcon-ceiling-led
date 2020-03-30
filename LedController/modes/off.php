@@ -18,7 +18,7 @@ class off implements iMode
 
     public function start($parameters)
     {
-        $this->adapter->SetColor(0, 0, 0);
+        $this->adapter->SetBatch(0, 0, 0);
     }
 
     public function stop()
