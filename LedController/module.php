@@ -15,11 +15,17 @@ class LedController extends IPSModule
 
     public function ForwardData($text)
     {
-        IPS_LogMessage("LedController Send", $text);
+        IPS_LogMessage("LedController", "Sending Command: " . $text);
 
         $response = $this->SendDataToParent(json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => $text)));
+        if($response === false || is_null($response)){
+            $jsonError = json_last_error();
+            IPS_LogMessage("LedController", "Received Error: " . $jsonError);
+        }
 
-        IPS_LogMessage("LedController Resc", $response);
+
+
+        IPS_LogMessage("LedController", "Received Response: " . $response);
 
     }
 
@@ -30,25 +36,26 @@ class LedController extends IPSModule
 
     public function Enable()
     {
-        $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
-        IPS_Sleep(1);
-
-        $bytes = array(255, 255, 255);
-        $string = implode(array_map("chr", $bytes));
-
-        $this->ForwardData($string);
-        IPS_Sleep(5);
+        SetColor(255, 255, 255);
     }
 
     public function Disable()
     {
+        SetColor(0, 0, 0);
+    }
+
+    public function Reset()
+    {
+        $this->ForwardData("RESET\n");
+        IPS_Sleep(1);
+    }
+
+    public function SetColor($red, $green, $blue) {
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
         IPS_Sleep(1);
 
-        $bytes = array(0, 0, 0);
-        $string = implode(array_map("chr", $bytes));
-
-        $this->ForwardData($string);
+        $colorBuffer = array($red, $green, $blue);
+        $this->ForwardData(implode(array_map("chr", $colorBuffer)));
         IPS_Sleep(5);
     }
 }
