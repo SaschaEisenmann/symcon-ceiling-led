@@ -11,6 +11,7 @@ define('TIMER_NAME', 'SCHEDULE');
 define('PARAMETERS', 'PARAMETERS');
 define('STATE', 'STATE');
 define('MODE', 'MODE');
+define('MODE_CHANGE', 'MODE_CHANGE');
 
 class LedController extends IPSModule implements ILedAdapter
 {
@@ -27,6 +28,7 @@ class LedController extends IPSModule implements ILedAdapter
         // Register attributes for internal usage
         $this->RegisterAttributeString(PARAMETERS, '',);
         $this->RegisterAttributeString(STATE, '');
+        $this->RegisterAttributeBoolean(MODE_CHANGE, false);
     }
 
     public function ApplyChanges()
@@ -48,14 +50,18 @@ class LedController extends IPSModule implements ILedAdapter
      */
     public function SetMode($modeId, $parameters)
     {
-        $this->StartLooping(0);
+        $this->WriteAttributeBoolean(MODE_CHANGE, true);
 
-        SetValueInteger($this->GetIDForIdent("MODE"), $modeId);
+        $this->StartLooping(0);
         $this->WriteAttributeString(PARAMETERS, json_encode($parameters ? $parameters : []));
         $this->SaveState(array('EMPTY' => 'EMPTY'));
+        SetValueInteger($this->GetIDForIdent("MODE"), $modeId);
 
         $mode = $this->FindMode($modeId);
         $mode->Start($this);
+
+
+        $this->WriteAttributeBoolean(MODE_CHANGE, false);
     }
 
     /**
@@ -73,10 +79,12 @@ class LedController extends IPSModule implements ILedAdapter
      */
     public function Trigger()
     {
-        $modeId = GetValueInteger($this->GetIDForIdent("MODE"));
-        $mode = $this->FindMode($modeId);
+        if(!$this->ReadAttributeBoolean(MODE_CHANGE)) {
+            $modeId = GetValueInteger($this->GetIDForIdent("MODE"));
+            $mode = $this->FindMode($modeId);
 
-        $mode->Trigger($this);
+            $mode->Trigger($this);
+        }
     }
 
     private function FindMode(int $mode)
