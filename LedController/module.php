@@ -118,7 +118,6 @@ class LedController extends IPSModule
                 if($hue == 0) {
                     $hue = 1;
                 }
-                IPS_LogMessage("LedController", json_encode($ledColors));
                 $ledColors[$i] = $this->HslToRgb($hue, 100, 100);
             }
 
@@ -194,16 +193,15 @@ class LedController extends IPSModule
         $dR *= 255; $dG *= 255; $dB *= 255;
 
         return array(
-            'red' => $dR,
-            'green' => $dG,
-            'blue' => $dB
+            'red' => round($dR),
+            'green' => round($dG),
+            'blue' => round($dB)
         );
     }
 
     public function ForwardData($text)
     {
         $data = json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => utf8_encode($text)));
-        IPS_LogMessage("LedController", $data);
         $this->SendDataToParent($data);
     }
 
@@ -238,6 +236,7 @@ class LedController extends IPSModule
     public function SetColor($colors) {
         $colorBuffer = [];
         foreach ($colors as $c) {
+            IPS_LogMessage("LedController", json_encode($c));
             $buffer[] = $c->blue;
             $buffer[] = $c->green;
             $buffer[] = $c->red;
