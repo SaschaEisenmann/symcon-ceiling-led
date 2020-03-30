@@ -39,6 +39,11 @@
     },
     {
       "type": "Button",
+      "label": "Rainbow",
+      "onClick": "print_r(LEDC_SetMode($id, 3, null));"
+    },
+    {
+      "type": "Button",
       "label": "Off",
       "onClick": "print_r(LEDC_SetMode($id, 0, null));"
     }

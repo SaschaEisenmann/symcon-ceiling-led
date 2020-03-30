@@ -1,10 +1,5 @@
 <?php
 
-require_once('modes/off.php');
-require_once('modes/color.php');
-require_once('modes/colorChange.php');
-require_once('iAdapter.php');
-
 class LedController extends IPSModule implements iAdapter
 {
     public function Create()
@@ -25,6 +20,7 @@ class LedController extends IPSModule implements iAdapter
         // 0 -> Off
         // 1 -> Color
         // 2 -> ColorChange
+        // 3 -> Rainbow
     }
 
     public function SetMode($mode, $parameters)
@@ -41,36 +37,42 @@ class LedController extends IPSModule implements iAdapter
 
     private function TriggerMode($mode, $isInterval)
     {
+        $this->SetTimerInterval('SCHEDULE', 0);
+        $this->SaveState([]);
+
         switch ($mode) {
             case 1:
-                $this->modeColor($isInterval);
+                $this->ModeColor($isInterval);
                 return;
             case 2:
-                $this->modeColorChange($isInterval);
+                $this->ModeColorChange($isInterval);
+                return;
+            case 3:
+                $this->ModeRainbow($isInterval);
                 return;
             default:
-                $this->modeOff($isInterval);
+                $this->ModeOff($isInterval);
                 return;
         }
     }
 
-    private function modeColor($isInterval) {
+    private function ModeColor($isInterval) {
         $parameters = $this->LoadParameters();
         $this->SetBatch($parameters[0], $parameters[1], $parameters[2]);
     }
 
-    private function modeOff($isInterval) {
+    private function ModeOff($isInterval) {
         $this->SetBatch(0, 0, 0);
     }
 
-    private function modeColorChange($isInterval) {
+    private function ModeColorChange($isInterval) {
 
         if(!$isInterval) {
             $this->SetTimerInterval('SCHEDULE', 100);
         } else {
             $hue = $this->LoadState()->hue;
 
-            $color = $this->GetRgb($hue, 100, 100);
+            $color = $this->HslToRgb($hue, 100, 100);
             $this->SetBatch($color['red'], $color['green'], $color['blue']);
 
             $hue += 2;
@@ -80,6 +82,53 @@ class LedController extends IPSModule implements iAdapter
 
             $this->SaveState(array(
                'hue' => $hue
+            ));
+        }
+    }
+
+    private function ModeRainbow($isInterval) {
+
+        $ledCount = 247;
+        $speed = 3;
+
+        if(!$isInterval) {
+            $this->SetTimerInterval('SCHEDULE', 100);
+        } else {
+            $ledColors = [];
+            for ($i = 0; $i <= $ledCount; $i++) {
+                $ledColors[] = array(
+                    'red' => 0,
+                    'green' => 0,
+                    'blue' => 0
+                );
+            }
+
+            $step = $this->LoadState()->step;
+            $step = $step ? $step : 0;
+
+            for ($i = 0; $i <= $ledCount; $i++) {
+                $hue = $i + 1 + $step;
+
+                if($hue >= 359) {
+                    $hue -= 359;
+                }
+
+                if($hue == 0) {
+                    $hue = 1;
+                }
+
+                $ledColors[$i] = $this->HslToRgb($hue, 100, 100);
+            }
+
+            $step += $speed;
+            if($step > 360) {
+                $step = 0;
+            }
+
+            $this->SetColor($ledColors);
+
+            $this->SaveState(array(
+                'step' => $step
             ));
         }
     }
@@ -102,12 +151,7 @@ class LedController extends IPSModule implements iAdapter
         SetValueString($this->GetIDForIdent("STATE"), json_encode($state));
     }
 
-
-
-
-
-
-    private function GetRgb($iH, $iS, $iV) {
+    private function HslToRgb($iH, $iS, $iV) {
 
         if($iH < 0)   $iH = 0;   // Hue:
         if($iH > 360) $iH = 360; //   0-360
@@ -153,45 +197,14 @@ class LedController extends IPSModule implements iAdapter
         );
     }
 
-    private function FindMode($name) {
-        foreach ($this->modes as $mode) {
-            if($mode->GetName() == $name) {
-                return $mode;
-            }
-        }
-
-        throw new Error("Mode not found");
-    }
-
-
-
-
-
-
-
-
-
     public function ForwardData($text)
     {
-        IPS_LogMessage("LedController", "Sending Command: " . $text);
-
-        $json = json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => utf8_encode($text)));
-        IPS_LogMessage("LedController", "Sending JSON: " . $json);
-        if($json === false || is_null($json)){
-            $jsonError = json_last_error();
-            IPS_LogMessage("LedController", "Received Error: " . $jsonError);
-        }
-
-
-        $response = $this->SendDataToParent($json);
-
-        IPS_LogMessage("LedController", "Received Response: " . $response);
-
+        $data = json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => utf8_encode($text)));
+        $this->SendDataToParent($data);
     }
 
     public function ReceiveData($JSONString)
     {
-        IPS_LogMessage("LedController", $JSONString);
     }
 
     public function Enable()
@@ -207,8 +220,8 @@ class LedController extends IPSModule implements iAdapter
     public function Reset()
     {
         $this->ForwardData("RESET\n");
-        IPS_Sleep(1);
     }
+
     public function SetBatch($red, $green, $blue) {
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
         IPS_Sleep(1);
@@ -231,20 +244,5 @@ class LedController extends IPSModule implements iAdapter
 
         $this->ForwardData(implode(array_map("chr", $colorBuffer)));
         IPS_Sleep(35);
-    }
-
-    private $scheduleFunction;
-    public function Schedule($interval, $function)
-    {
-        IPS_LogMessage("LedController", "Schedule Trigger: ");
-        $this->scheduleFunction = $function;
-        $this->SetTimerInterval('Schedule', $interval);
-    }
-
-    public function Interval() {
-        if($this->scheduleFunction instanceof Closure) {
-            IPS_LogMessage("LedController", "Intervall Trigger: ");
-            $this->scheduleFunction();
-        }
     }
 }
