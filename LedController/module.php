@@ -103,8 +103,8 @@ class LedController extends IPSModule
                 );
             }
 
-            $step = $this->LoadState()->step;
-            $step = $step ? $step : 0;
+            $state = $this->LoadState();
+            $step = property_exists($state, "step") ? $state->step : 0;
 
             for ($i = 0; $i <= $ledCount; $i++) {
                 $hue = $i + 1 + $step;
