@@ -94,7 +94,7 @@ class LedController extends IPSModule
         $speed = 3;
 
         if(!$isInterval) {
-            $this->SetTimerInterval('SCHEDULE', 100);
+            $this->SetTimerInterval('SCHEDULE', 500);
         } else {
             $ledColors = [];
             for ($i = 0; $i <= $ledCount; $i++) {
@@ -201,12 +201,15 @@ class LedController extends IPSModule
 
     public function ForwardData($text)
     {
+        IPS_LogMessage("LedController", "Sending Data: " . $text);
+
         $data = json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => utf8_encode($text)));
         $this->SendDataToParent($data);
     }
 
-    public function ReceiveData($JSONString)
+    public function ReceiveData($text)
     {
+        IPS_LogMessage("LedController", "Received Data: " . $text);
     }
 
     public function Enable()
