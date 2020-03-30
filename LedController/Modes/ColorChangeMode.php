@@ -1,7 +1,7 @@
 <?php
 
 require_once('IMode.php');
-require_once('./../Utils/ColorUtils.php');
+require_once(__DIR__ . '/../Utils/ColorUtils.php');
 
 class ColorChangeMode implements IMode
 {
