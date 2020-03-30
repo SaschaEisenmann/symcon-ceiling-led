@@ -11,6 +11,11 @@
       "type": "Button",
       "label": "Disable",
       "onClick": "print_r(LEDC_Disable($id));"
+    },
+    {
+      "type": "Button",
+      "label": "Reset",
+      "onClick": "print_r(LEDC_Reset($id));"
     }
   ],
   "status": [
