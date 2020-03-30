@@ -51,8 +51,9 @@ class LedController extends IPSModule implements ILedAdapter
     public function SetMode($modeId, $parameters)
     {
         $this->WriteAttributeBoolean(MODE_CHANGE, true);
-
         $this->StartLooping(0);
+        IPS_Sleep(500);
+
         $this->WriteAttributeString(PARAMETERS, json_encode($parameters ? $parameters : []));
         $this->SaveState(array('EMPTY' => 'EMPTY'));
         SetValueInteger($this->GetIDForIdent("MODE"), $modeId);
