@@ -1,5 +1,8 @@
 <?php
 
+require_once('modes/off.php');
+require_once('modes/color.php');
+
 define("MODES", array(
     new off()
 ));

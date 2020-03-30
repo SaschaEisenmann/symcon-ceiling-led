@@ -1,5 +1,8 @@
 <?php
 
+require_once('iMode.php');
+require_once('../iAdapter.php');
+
 class color implements iMode
 {
     private $adapter;

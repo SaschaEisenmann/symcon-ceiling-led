@@ -1,5 +1,7 @@
 <?php
 
+require_once('iMode.php');
+require_once('../iAdapter.php');
 
 class off implements iMode
 {
