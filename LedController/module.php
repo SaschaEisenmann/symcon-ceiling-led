@@ -1,6 +1,5 @@
 <?php
 
-require_once('./ILedAdapter.php');
 require_once('./Modes/OffMode.php');
 
 class LedController extends IPSModule implements ILedAdapter
