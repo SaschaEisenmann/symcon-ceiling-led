@@ -118,7 +118,7 @@ class LedController extends IPSModule
                 if($hue == 0) {
                     $hue = 1;
                 }
-                IPS_LogMessage("LedController", $ledColors);
+                IPS_LogMessage("LedController", json_encode($ledColors));
                 $ledColors[$i] = $this->HslToRgb($hue, 100, 100);
             }
 
