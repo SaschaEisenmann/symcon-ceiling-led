@@ -6,36 +6,6 @@
       "type": "Button",
       "label": "Reset",
       "onClick": "print_r(LEDC_Reset($id));"
-    },
-    {
-      "type": "Button",
-      "label": "Off",
-      "onClick": "print_r(LEDC_SetMode($id, 0, null));"
-    },
-    {
-      "type": "Button",
-      "label": "Red",
-      "onClick": "print_r(LEDC_SetMode($id, 1, [255, 0, 0]));"
-    },
-    {
-      "type": "Button",
-      "label": "Green",
-      "onClick": "print_r(LEDC_SetMode($id, 1, [0, 255, 0]));"
-    },
-    {
-      "type": "Button",
-      "label": "Blue",
-      "onClick": "print_r(LEDC_SetMode($id, 1, [0, 0, 255]));"
-    },
-    {
-      "type": "Button",
-      "label": "ColorChange",
-      "onClick": "print_r(LEDC_SetMode($id, 2, null));"
-    },
-    {
-      "type": "Button",
-      "label": "Rainbow",
-      "onClick": "print_r(LEDC_SetMode($id, 3, null));"
     }
   ],
   "status": [
