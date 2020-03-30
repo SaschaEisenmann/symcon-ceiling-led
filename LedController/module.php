@@ -6,8 +6,11 @@ define("MODES", array(
 
 class LedController extends IPSModule implements iAdapter
 {
-    private array $modes;
-    private iMode $activeMode;
+    /** @var array +/ */
+    private $modes;
+
+    /** @var iMode +/ */
+    private $activeMode;
 
     public function __construct($instanceId)
     {

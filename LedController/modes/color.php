@@ -2,14 +2,14 @@
 
 class color implements iMode
 {
-    private iAdapter $adapter;
+    private $adapter;
 
     public function getName()
     {
         return "color";
     }
 
-    public function initialize(iAdapter $adapter)
+    public function initialize($adapter)
     {
         $this->adapter = $adapter;
     }
