@@ -1,6 +1,9 @@
 <?php
 
-class LedController extends IPSModule
+require_once('./ILedAdapter.php');
+require_once('./Modes/OffMode.php');
+
+class LedController extends IPSModule implements ILedAdapter
 {
     public function Create()
     {
@@ -8,19 +11,20 @@ class LedController extends IPSModule
 
         $this->RequireParent("{6DC3D946-0D31-450F-A8C6-C42DB8D7D4F1}");
         $this->RegisterTimer('SCHEDULE', 0, 'LEDC_TriggerInterval($_IPS[\'TARGET\']);');
+        $this->RegisterVariableInteger('MODE', 'Mode', "", 0);
+
+        // 0 -> Off
+        // 1 -> Color
+        // 2 -> ColorChange
+        // 3 -> Rainbow
+
+        $this->RegisterPropertyString('PARAMETERS', '',);
+        $this->RegisterPropertyString('STATE', '');
     }
 
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-
-        $this->RegisterVariableInteger('MODE', 'Mode', "", 0);
-        $this->RegisterVariableString('PARAMETERS', 'Parameters', "", 1);
-        $this->RegisterVariableString('STATE', 'State', "", 3);
-        // 0 -> Off
-        // 1 -> Color
-        // 2 -> ColorChange
-        // 3 -> Rainbow
     }
 
     public function SetMode($mode, $parameters)
@@ -29,8 +33,8 @@ class LedController extends IPSModule
             $parameters = [];
         }
 
-        SetValueInteger($this->GetIDForIdent("MODE"), $mode);
-        SetValueString($this->GetIDForIdent("PARAMETERS"), json_encode($parameters));
+        IPS_SetProperty($this->InstanceID, 'MODE', $mode);
+        IPS_SetProperty($this->InstanceID, 'PARAMETERS', json_encode($parameters));
 
         $this->TriggerMode($mode, false);
     }
@@ -53,7 +57,11 @@ class LedController extends IPSModule
                 $this->ModeRainbow($isInterval);
                 return;
             default:
-                $this->ModeOff($isInterval);
+                if(!$isInterval) {
+                    (new OffMode())->Start($this);
+                } else {
+                    (new OffMode())->Trigger($this);
+                }
                 return;
         }
     }
@@ -146,15 +154,15 @@ class LedController extends IPSModule
     }
 
     private function LoadParameters() {
-        return json_decode(GetValueString($this->GetIDForIdent("PARAMETERS")));
+        return json_decode($this->ReadPropertyString('PARAMETERS'));
     }
 
     private function LoadState() {
-        return json_decode(GetValueString($this->GetIDForIdent("STATE")));
+        return json_decode($this->ReadPropertyString('STATE'));
     }
 
     private function SaveState($state) {
-        SetValueString($this->GetIDForIdent("STATE"), json_encode($state));
+        IPS_SetProperty($this->InstanceID, 'STATE', json_encode($state));
     }
 
     private function HslToRgb($iH, $iS, $iV) {
@@ -233,6 +241,26 @@ class LedController extends IPSModule
     }
 
     public function SetBatch($red, $green, $blue) {
+        $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
+        IPS_Sleep(1);
+
+        $colorBuffer = array($blue, $green, $red);
+        $this->ForwardData(implode(array_map("chr", $colorBuffer)));
+        IPS_Sleep(5);
+    }
+
+
+
+
+
+
+    public function StartLooping(int $interval)
+    {
+        $this->SetTimerInterval('SCHEDULE', $interval);
+    }
+
+    public function SetColorBatch(int $red, int $green, int $blue)
+    {
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
         IPS_Sleep(1);
 
