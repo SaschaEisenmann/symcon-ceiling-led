@@ -6,270 +6,144 @@ require_once('Modes/ColorMode.php');
 require_once('Modes/ColorChangeMode.php');
 require_once('Modes/RainbowMode.php');
 
+define('TIMER_NAME', 'SCHEDULE');
+
+define('PARAMETERS', 'PARAMETERS');
+define('STATE', 'STATE');
+define('MODE', 'MODE');
+
 class LedController extends IPSModule implements ILedAdapter
 {
     public function Create()
     {
         parent::Create();
 
+        // The parent Serial Port instance
         $this->RequireParent("{6DC3D946-0D31-450F-A8C6-C42DB8D7D4F1}");
-        $this->RegisterTimer('SCHEDULE', 0, 'LEDC_TriggerInterval($_IPS[\'TARGET\']);');
 
+        // Timer for usage by modes
+        $this->RegisterTimer(TIMER_NAME, 0, 'LEDC_Trigger($_IPS[\'TARGET\']);');
 
-        $this->RegisterAttributeString('PARAMETERS', '',);
-        $this->RegisterAttributeString('STATE', '');
+        // Register attributes for internal usage
+        $this->RegisterAttributeString(PARAMETERS, '',);
+        $this->RegisterAttributeString(STATE, '');
     }
 
     public function ApplyChanges()
     {
         parent::ApplyChanges();
 
-        $this->RegisterVariableInteger('MODE', 'Mode', "", 0);
-        // 0 -> Off
-        // 1 -> Color
-        // 2 -> ColorChange
-        // 3 -> Rainbow
+        // Register a variable for the active mode
+        $this->RegisterVariableInteger(MODE, 'Mode', "", 0);
+
+        $this->Reset();
     }
 
-    public function SetMode($mode, $parameters)
+    /**
+     * Changes the current mode of the LEDs.
+     * @param int $modeId The id of the mode to select
+     * @param int $parameters An array of parameters for the mode
+     */
+    public function SetMode($modeId, $parameters)
     {
-        if($parameters == null) {
-            $parameters = [];
-        }
+        $this->StartLooping(0);
 
-        $this->WriteAttributeString("PARAMETERS", json_encode($parameters));
+        SetValueInteger($this->GetIDForIdent("MODE"), $modeId);
+        $this->WriteAttributeString(PARAMETERS, json_encode($parameters ? $parameters : []));
+        $this->SaveState(array('EMPTY' => 'EMPTY'));
 
-        SetValueInteger($this->GetIDForIdent("MODE"), $mode);
-
-        $this->TriggerMode($mode, false);
+        $mode = $this->FindMode($modeId);
+        $mode->Start($this);
     }
 
-    private function TriggerMode($mode, $isInterval)
-    {
-        if(!$isInterval) {
-            $this->SetTimerInterval('SCHEDULE', 0);
-            $this->SaveState(array('_dummy' => ''));
-        }
-
-        switch ($mode) {
-            case 1:
-                if(!$isInterval) {
-                    (new ColorMode())->Start($this);
-                } else {
-                    (new ColorMode())->Trigger($this);
-                }
-                return;
-            case 2:
-                if(!$isInterval) {
-                    (new ColorChangeMode())->Start($this);
-                } else {
-                    (new ColorChangeMode())->Trigger($this);
-                }
-                return;
-            case 3:
-                if(!$isInterval) {
-                    (new RainbowMode())->Start($this);
-                } else {
-                    (new RainbowMode())->Trigger($this);
-                }
-                return;
-            default:
-                if(!$isInterval) {
-                    (new OffMode())->Start($this);
-                } else {
-                    (new OffMode())->Trigger($this);
-                }
-                return;
-        }
-    }
-
-    private function ModeColor($isInterval) {
-        $parameters = $this->LoadParameters();
-        $this->SetBatch($parameters[0], $parameters[1], $parameters[2]);
-    }
-
-    private function ModeOff($isInterval) {
-        if(!$isInterval) {
-            $this->SetTimerInterval('SCHEDULE', 500);
-        } else {
-            $this->SetBatch(0, 0, 0);
-        }
-    }
-
-    private function ModeColorChange($isInterval) {
-
-        if(!$isInterval) {
-            $this->SetTimerInterval('SCHEDULE', 100);
-        } else {
-            $hue = $this->LoadState()->hue;
-
-            $color = $this->HslToRgb($hue, 100, 100);
-            $this->SetBatch($color['red'], $color['green'], $color['blue']);
-
-            $hue += 2;
-            if($hue > 359) {
-                $hue = 1;
-            }
-
-            $this->SaveState(array(
-               'hue' => $hue
-            ));
-        }
-    }
-
-    private function ModeRainbow($isInterval) {
-
-        $ledCount = 247;
-        $speed = 3;
-
-        if(!$isInterval) {
-            $this->SetTimerInterval('SCHEDULE', 100);
-        } else {
-            $ledColors = [];
-            for ($i = 0; $i < $ledCount; $i++) {
-                $ledColors[] = array(
-                    'red' => 0,
-                    'green' => 0,
-                    'blue' => 0
-                );
-            }
-
-            $state = $this->LoadState();
-            $step = property_exists($state, "step") ? $state->step : 0;
-
-            for ($i = 0; $i < $ledCount; $i++) {
-                $hue = $i + 1 + $step;
-
-                if($hue >= 359) {
-                    $hue -= 359;
-                }
-
-                if($hue == 0) {
-                    $hue = 1;
-                }
-                $ledColors[$i] = $this->HslToRgb($hue, 100, 100);
-            }
-
-            $step += $speed;
-            if($step > 360) {
-                $step = 0;
-            }
-
-
-            $this->SetColor($ledColors);
-
-            $this->SaveState(array(
-                'step' => $step
-            ));
-        }
-    }
-
-    public function TriggerInterval()
-    {
-        $mode = GetValueInteger($this->GetIDForIdent("MODE"));
-        $this->TriggerMode($mode, true);
-    }
-
-    private function LoadParameters() {
-        return json_decode($this->ReadAttributeString('PARAMETERS'));
-    }
-
-    private function HslToRgb($iH, $iS, $iV) {
-
-        if($iH < 0)   $iH = 0;   // Hue:
-        if($iH > 360) $iH = 360; //   0-360
-        if($iS < 0)   $iS = 0;   // Saturation:
-        if($iS > 100) $iS = 100; //   0-100
-        if($iV < 0)   $iV = 0;   // Lightness:
-        if($iV > 100) $iV = 100; //   0-100
-
-        $dS = $iS/100.0; // Saturation: 0.0-1.0
-        $dV = $iV/100.0; // Lightness:  0.0-1.0
-        $dC = $dV*$dS;   // Chroma:     0.0-1.0
-        $dH = $iH/60.0;  // H-Prime:    0.0-6.0
-        $dT = $dH;       // Temp variable
-
-        while($dT >= 2.0) $dT -= 2.0; // php modulus does not work with float
-        $dX = $dC*(1-abs($dT-1));     // as used in the Wikipedia link
-
-        switch(floor($dH)) {
-            case 0:
-                $dR = $dC; $dG = $dX; $dB = 0.0; break;
-            case 1:
-                $dR = $dX; $dG = $dC; $dB = 0.0; break;
-            case 2:
-                $dR = 0.0; $dG = $dC; $dB = $dX; break;
-            case 3:
-                $dR = 0.0; $dG = $dX; $dB = $dC; break;
-            case 4:
-                $dR = $dX; $dG = 0.0; $dB = $dC; break;
-            case 5:
-                $dR = $dC; $dG = 0.0; $dB = $dX; break;
-            default:
-                $dR = 0.0; $dG = 0.0; $dB = 0.0; break;
-        }
-
-        $dM  = $dV - $dC;
-        $dR += $dM; $dG += $dM; $dB += $dM;
-        $dR *= 255; $dG *= 255; $dB *= 255;
-
-        return array(
-            'red' => round($dR),
-            'green' => round($dG),
-            'blue' => round($dB)
-        );
-    }
-
-    public function ForwardData($text)
-    {
-        IPS_LogMessage("LedController", "Sending Data: " . $text);
-
-        $data = json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => utf8_encode($text)));
-        $this->SendDataToParent($data);
-    }
-
-    public function ReceiveData($json)
-    {
-        $data = json_decode($json);
-        IPS_LogMessage("LedController", "Received Data: " . utf8_decode($data->Buffer));
-    }
-
-
-    public function SetBatch($red, $green, $blue) {
-        $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
-        IPS_Sleep(1);
-
-        $colorBuffer = array($blue, $green, $red);
-        $this->ForwardData(implode(array_map("chr", $colorBuffer)));
+    /**
+     * Resets the connected LED Board
+     */
+    public function Reset() {
+        $this->ForwardData("RESET\n");
         IPS_Sleep(5);
+
+        $this->SetMode(0, null);
     }
 
+    /**
+     * Will be called from the timer 'SCHEDULE' and calls the Trigger method of the current mode.
+     */
+    public function Trigger()
+    {
+        $modeId = GetValueInteger($this->GetIDForIdent("MODE"));
+        $mode = $this->FindMode($modeId);
 
+        $mode->Trigger($this);
+    }
 
+    private function FindMode(int $mode)
+    {
+        switch ($mode) {
+            case 1: return new ColorMode();
+            case 2: return new ColorChangeMode();
+            case 3: return new RainbowMode();
+            default: return new OffMode();
+        }
+    }
 
-
-
-
-
-
-
-
+    /**
+     * Configures the timer to trigger the current mode at a given interval
+     * @param int $interval The interval duration in milliseconds
+     */
     public function StartLooping(int $interval)
     {
-        $this->SetTimerInterval('SCHEDULE', $interval);
+        $this->SetTimerInterval(TIMER_NAME, $interval);
     }
 
+    /**
+     * Return the parameters for the active mode
+     * @return array
+     */
+    public function GetParameters()
+    {
+        return json_decode($this->ReadAttributeString(PARAMETERS));
+    }
+
+    /**
+     * Loads the last saved state of a mode
+     * @return array The state
+     */
+    public function LoadState() {
+        return json_decode($this->ReadAttributeString(STATE));
+    }
+
+    /**
+     * Save the given state
+     * @param array $state The state to save
+     */
+    public function SaveState($state) {
+        $this->WriteAttributeString(STATE, json_encode($state));
+    }
+
+    /**
+     * Changes the color of all connected LEDs at once.
+     * @param int $red The red value (0 - 255)
+     * @param int $green The green value (0 - 255)
+     * @param int $blue The blue value (0 - 255)
+     */
     public function SetColorBatch(int $red, int $green, int $blue)
     {
+        $colorBuffer = array($blue, $green, $red);
+
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
         IPS_Sleep(1);
 
-        $colorBuffer = array($blue, $green, $red);
         $this->ForwardData(implode(array_map("chr", $colorBuffer)));
         IPS_Sleep(5);
     }
 
-    public function SetColor($colors) {
+    /**
+     * Changes the color of each connected LEDs individually.
+     * @param array $colors An array with a color for each LED.
+     */
+    public function SetColor($colors)
+    {
         $colorBuffer = [];
         foreach ($colors as $c) {
             $colorBuffer[] = $c['blue'];
@@ -284,16 +158,23 @@ class LedController extends IPSModule implements ILedAdapter
         IPS_Sleep(35);
     }
 
-    public function GetParameters()
+    /**
+     * Forwares the given command to the parent Serial Port instance
+     * @param string $command The command to send
+     */
+    public function ForwardData($command)
     {
-        return json_decode($this->ReadAttributeString('PARAMETERS'));
+        $data = json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => utf8_encode($command)));
+        $this->SendDataToParent($data);
     }
 
-    public function LoadState() {
-        return json_decode($this->ReadAttributeString('STATE'));
-    }
-
-    public function SaveState($state) {
-        $this->WriteAttributeString("STATE", json_encode($state));
+    /**
+     * Reciever for inbound date from the parent Serial Port instance
+     * @param mixed $json The date container from the parent Serial Port instance
+     */
+    public function ReceiveData($json)
+    {
+        $data = json_decode($json);
+        IPS_LogMessage("LedController", "Received Data: " . utf8_decode($data->Buffer));
     }
 }
