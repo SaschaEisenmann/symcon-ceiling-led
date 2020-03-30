@@ -13,9 +13,14 @@ class LedController extends IPSModule
         parent::ApplyChanges();
     }
 
-    public function ForwardData($JSONString)
+    public function ForwardData($text)
     {
-        IPS_LogMessage("LedController", $JSONString);
+        IPS_LogMessage("LedController", $text);
+
+        $response = $this->SendDataToParent(json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => $text->Buffer)));
+
+        IPS_LogMessage("LedController", $response);
+
     }
 
     public function ReceiveData($JSONString)
@@ -25,9 +30,15 @@ class LedController extends IPSModule
 
     public function Enable()
     {
+        $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
+
+        $this->ForwardData("ÿÿÿ");
     }
 
     public function Disable()
     {
+        $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
+
+        $this->ForwardData("ÿÿÿ");
     }
 }
