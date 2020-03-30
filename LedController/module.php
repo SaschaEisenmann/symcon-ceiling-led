@@ -38,7 +38,7 @@ class LedController extends IPSModule
     private function TriggerMode($mode, $isInterval)
     {
         $this->SetTimerInterval('SCHEDULE', 0);
-        $this->SaveState([]);
+        $this->SaveState(array('_dummy' => ''));
 
         switch ($mode) {
             case 1:
