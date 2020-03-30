@@ -26,13 +26,13 @@ class LedController extends IPSModule implements iAdapter
         foreach ($this->modes as $mode) {
             $mode->initialize($this);
         }
-
-        $this->RegisterTimer('Schedule', 0, 'LEDC_Interval($_IPS[\'TARGET\'], 0);');
     }
 
     public function Create()
     {
         $this->RequireParent("{6DC3D946-0D31-450F-A8C6-C42DB8D7D4F1}");
+
+        $this->RegisterTimer('Schedule', 0, 'LEDC_Interval($_IPS[\'TARGET\'], 0);');
     }
 
     public function ApplyChanges()
