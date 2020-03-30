@@ -214,12 +214,12 @@ class LedController extends IPSModule
 
     public function Enable()
     {
-        $this->SetColor(255, 255, 255);
+        $this->SetBatch(255, 255, 255);
     }
 
     public function Disable()
     {
-        $this->SetColor(0, 0, 0);
+        $this->SetBatch(0, 0, 0);
     }
 
     public function Reset()
