@@ -15,11 +15,11 @@ class LedController extends IPSModule
 
     public function ForwardData($text)
     {
-        IPS_LogMessage("LedController", $text);
+        IPS_LogMessage("LedController Send", $text);
 
         $response = $this->SendDataToParent(json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => $text)));
 
-        IPS_LogMessage("LedController", $response);
+        IPS_LogMessage("LedController Resc", $response);
 
     }
 
@@ -31,21 +31,24 @@ class LedController extends IPSModule
     public function Enable()
     {
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
+        IPS_Sleep(1);
 
         $bytes = array(255, 255, 255);
         $string = implode(array_map("chr", $bytes));
 
         $this->ForwardData($string);
+        IPS_Sleep(5);
     }
 
     public function Disable()
     {
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
-
+        IPS_Sleep(1);
 
         $bytes = array(0, 0, 0);
         $string = implode(array_map("chr", $bytes));
 
         $this->ForwardData($string);
+        IPS_Sleep(5);
     }
 }
