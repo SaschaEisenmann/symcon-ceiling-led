@@ -18,7 +18,7 @@ class RainbowMode implements IMode
         $ledColors = [];
 
         $state = $ledAdapter->LoadState();
-        $position = property_exists($state, "position") ? $state->step : 0;
+        $position = property_exists($state, "position") ? $state->position : 0;
 
         for ($led = 0; $led < LED_COUNT; $led++) {
             $hue = $led + 1 + $position;
