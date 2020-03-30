@@ -1,8 +1,9 @@
 <?php
 
+require_once('ILedAdapter.php');
 require_once('Modes/OffMode.php');
 require_once('Modes/ColorMode.php');
-require_once('ILedAdapter.php');
+require_once('Modes/ColorChangeMode.php');
 
 class LedController extends IPSModule implements ILedAdapter
 {
@@ -58,7 +59,11 @@ class LedController extends IPSModule implements ILedAdapter
                 }
                 return;
             case 2:
-                $this->ModeColorChange($isInterval);
+                if(!$isInterval) {
+                    (new ColorChangeMode())->Start($this);
+                } else {
+                    (new ColorChangeMode())->Trigger($this);
+                }
                 return;
             case 3:
                 $this->ModeRainbow($isInterval);
@@ -164,14 +169,6 @@ class LedController extends IPSModule implements ILedAdapter
         return json_decode($this->ReadAttributeString('PARAMETERS'));
     }
 
-    private function LoadState() {
-        return json_decode($this->ReadAttributeString('STATE'));
-    }
-
-    private function SaveState($state) {
-        $this->WriteAttributeString("STATE", json_encode($state));
-    }
-
     private function HslToRgb($iH, $iS, $iV) {
 
         if($iH < 0)   $iH = 0;   // Hue:
@@ -232,20 +229,6 @@ class LedController extends IPSModule implements ILedAdapter
         IPS_LogMessage("LedController", "Received Data: " . utf8_decode($data->Buffer));
     }
 
-    public function Enable()
-    {
-        $this->SetBatch(255, 255, 255);
-    }
-
-    public function Disable()
-    {
-        $this->SetBatch(0, 0, 0);
-    }
-
-    public function Reset()
-    {
-        $this->ForwardData("RESET\n");
-    }
 
     public function SetBatch($red, $green, $blue) {
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
@@ -299,5 +282,13 @@ class LedController extends IPSModule implements ILedAdapter
     public function GetParameters()
     {
         return json_decode($this->ReadAttributeString('PARAMETERS'));
+    }
+
+    public function LoadState() {
+        return json_decode($this->ReadAttributeString('STATE'));
+    }
+
+    public function SaveState($state) {
+        $this->WriteAttributeString("STATE", json_encode($state));
     }
 }
