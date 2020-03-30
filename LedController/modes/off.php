@@ -3,19 +3,19 @@
 
 class off implements iMode
 {
-    private iAdapter $adapter;
+    private $adapter;
 
     public function getName()
     {
         return "off";
     }
 
-    public function initialize(iAdapter $adapter)
+    public function initialize($adapter)
     {
         $this->adapter = $adapter;
     }
 
-    public function start(array $parameters)
+    public function start($parameters)
     {
         $this->adapter->SetColor(0, 0, 0);
     }

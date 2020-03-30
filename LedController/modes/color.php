@@ -14,7 +14,7 @@ class color implements iMode
         $this->adapter = $adapter;
     }
 
-    public function start(array $parameters)
+    public function start($parameters)
     {
         $this->adapter->SetColor($parameters[0], $parameters[1], $parameters[2]);
     }
