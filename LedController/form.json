@@ -1,0 +1,18 @@
+{
+  "elements": [
+  ],
+  "actions": [
+    {
+      "type": "Button",
+      "label": "Enable",
+      "onClick": "print_r(LEDC_Enable($id));"
+    },
+    {
+      "type": "Disable",
+      "label": "Enable",
+      "onClick": "print_r(LEDC_Disable($id));"
+    }
+  ],
+  "status": [
+  ]
+}
