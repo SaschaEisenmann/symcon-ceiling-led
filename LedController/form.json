@@ -8,8 +8,8 @@
       "onClick": "print_r(LEDC_Enable($id));"
     },
     {
-      "type": "Disable",
-      "label": "Enable",
+      "type": "Button",
+      "label": "Disable",
       "onClick": "print_r(LEDC_Disable($id));"
     }
   ],
