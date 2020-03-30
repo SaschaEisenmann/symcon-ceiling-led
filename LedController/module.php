@@ -1,6 +1,6 @@
 <?php
 
-class LedController extends IPSModule implements iAdapter
+class LedController extends IPSModule
 {
     public function Create()
     {
