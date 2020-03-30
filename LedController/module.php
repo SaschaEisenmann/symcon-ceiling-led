@@ -7,38 +7,85 @@ require_once('iAdapter.php');
 
 class LedController extends IPSModule implements iAdapter
 {
-    /** @var array +/ */
-    private $modes;
-
-    /** @var iMode +/ */
-    private $activeMode;
-
-    public function __construct($instanceId)
-    {
-        parent::__construct($instanceId);
-
-        $this->modes = [
-            new off(),
-            new color(),
-            new colorChange()
-        ];
-
-        foreach ($this->modes as $mode) {
-            $mode->initialize($this);
-        }
-    }
-
     public function Create()
     {
+        parent::Create();
+
         $this->RequireParent("{6DC3D946-0D31-450F-A8C6-C42DB8D7D4F1}");
 
+        $this->RegisterPropertyString('Mode', 'OFF');
+        $this->RegisterPropertyString('PARAMETERS', json_encode([]));
         $this->RegisterTimer('Schedule', 0, 'LEDC_Interval($_IPS[\'TARGET\']);');
     }
 
     public function ApplyChanges()
     {
         parent::ApplyChanges();
+
+        $this->RegisterVariableInteger('MODE', 'Mode', "", 0);
+        $this->RegisterVariableString('PARAMETERS', 'Parameters', "", 1);
+        // 0 -> Off
+        // 1 -> Color
+        // 2 -> ColorChange
     }
+
+    public function SetMode($mode, $parameters)
+    {
+        if($parameters == null) {
+            $parameters = [];
+        }
+
+        $this->SetValueInteger($this->GetIDForIdent("MODE"), $mode);
+        $this->SetValueString($this->GetIDForIdent("PARAMETERS"), json_encode($parameters));
+
+        $this->switchMode();
+    }
+
+    private function switchMode() {
+        $mode = $this->GetValueInteger($this->GetIDForIdent("MODE"));
+        $parameters = json_decode($this->GetValueString($this->GetIDForIdent("PARAMETERS")));
+
+        switch ($mode) {
+            case 1:
+                $this->switchToModeColor($parameters);
+                return;
+            default:
+                $this->switchToModeOff($parameters);
+                return;
+        }
+    }
+
+    private function switchToModeOff($parameters) {
+        $this->SetBatch(0, 0, 0);
+    }
+
+    private function switchToModeColor($parameters) {
+        $this->SetBatch($parameters[0], $parameters[1], $parameters[2]);
+    }
+
+
+
+
+
+
+
+    private function FindMode($name) {
+        foreach ($this->modes as $mode) {
+            if($mode->GetName() == $name) {
+                return $mode;
+            }
+        }
+
+        throw new Error("Mode not found");
+    }
+
+
+
+
+
+
+
+
 
     public function ForwardData($text)
     {
@@ -78,31 +125,6 @@ class LedController extends IPSModule implements iAdapter
         $this->ForwardData("RESET\n");
         IPS_Sleep(1);
     }
-
-    public function SetMode($name, $parameters) {
-        $mode = $this->FindMode($name);
-
-        if($this->activeMode) {
-            $this->activeMode->stop();
-            $this->activeMode = null;
-            $this->SetTimerInterval('Schedule', 0);
-            $this->scheduleFunction = null;
-        }
-
-        $this->activeMode = $mode;
-        $this->activeMode->start($parameters);
-    }
-
-    private function FindMode($name) {
-        foreach ($this->modes as $mode) {
-            if($mode->GetName() == $name) {
-                return $mode;
-            }
-        }
-
-        throw new Error("Mode not found");
-    }
-
     public function SetBatch($red, $green, $blue) {
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
         IPS_Sleep(1);
@@ -136,8 +158,8 @@ class LedController extends IPSModule implements iAdapter
     }
 
     public function Interval() {
-        IPS_LogMessage("LedController", "Intervall Trigger: " . $this->scheduleFunction);
         if($this->scheduleFunction instanceof Closure) {
+            IPS_LogMessage("LedController", "Intervall Trigger: ");
             $this->scheduleFunction();
         }
     }
