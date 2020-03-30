@@ -4,18 +4,13 @@
   "actions": [
     {
       "type": "Button",
-      "label": "Enable",
-      "onClick": "print_r(LEDC_Enable($id));"
-    },
-    {
-      "type": "Button",
-      "label": "Disable",
-      "onClick": "print_r(LEDC_Disable($id));"
-    },
-    {
-      "type": "Button",
       "label": "Reset",
       "onClick": "print_r(LEDC_Reset($id));"
+    },
+    {
+      "type": "Button",
+      "label": "Off",
+      "onClick": "print_r(LEDC_SetMode($id, 0, null));"
     },
     {
       "type": "Button",
@@ -41,11 +36,6 @@
       "type": "Button",
       "label": "Rainbow",
       "onClick": "print_r(LEDC_SetMode($id, 3, null));"
-    },
-    {
-      "type": "Button",
-      "label": "Off",
-      "onClick": "print_r(LEDC_SetMode($id, 0, null));"
     }
   ],
   "status": [

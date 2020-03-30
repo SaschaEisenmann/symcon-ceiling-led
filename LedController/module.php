@@ -36,7 +36,9 @@ class LedController extends IPSModule implements ILedAdapter
         // Register a variable for the active mode
         $this->RegisterVariableInteger(MODE, 'Mode', "", 0);
 
-        $this->Reset();
+        if ($this->HasActiveParent()) {
+            $this->Reset();
+        }
     }
 
     /**
