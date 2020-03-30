@@ -1,6 +1,7 @@
 <?php
 
 require_once('Modes/OffMode.php');
+require_once('Modes/ColorMode.php');
 require_once('ILedAdapter.php');
 
 class LedController extends IPSModule implements ILedAdapter
@@ -50,7 +51,11 @@ class LedController extends IPSModule implements ILedAdapter
 
         switch ($mode) {
             case 1:
-                $this->ModeColor($isInterval);
+                if(!$isInterval) {
+                    (new ColorMode())->Start($this);
+                } else {
+                    (new ColorMode())->Trigger($this);
+                }
                 return;
             case 2:
                 $this->ModeColorChange($isInterval);
@@ -256,6 +261,11 @@ class LedController extends IPSModule implements ILedAdapter
 
 
 
+
+
+
+
+
     public function StartLooping(int $interval)
     {
         $this->SetTimerInterval('SCHEDULE', $interval);
@@ -284,5 +294,10 @@ class LedController extends IPSModule implements ILedAdapter
 
         $this->ForwardData(implode(array_map("chr", $colorBuffer)));
         IPS_Sleep(35);
+    }
+
+    public function GetParameters()
+    {
+        return json_decode($this->ReadAttributeString('PARAMETERS'));
     }
 }

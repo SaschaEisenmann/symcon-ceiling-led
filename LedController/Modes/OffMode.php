@@ -6,7 +6,7 @@ class OffMode implements IMode
 {
     public function Start(ILedAdapter $ledAdapter)
     {
-        $ledAdapter->StartLooping(500);
+        $ledAdapter->StartLooping(1000);
     }
 
     public function Trigger(ILedAdapter $ledAdapter)
