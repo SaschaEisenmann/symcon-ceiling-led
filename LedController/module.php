@@ -31,17 +31,17 @@ class LedController extends IPSModule
 
     public function ReceiveData($JSONString)
     {
-        IPS_LogMessage("LedController", $JSONString);
+        $this->IPS_LogMessage("LedController", $JSONString);
     }
 
     public function Enable()
     {
-        SetColor(255, 255, 255);
+        $this->SetColor(255, 255, 255);
     }
 
     public function Disable()
     {
-        SetColor(0, 0, 0);
+        $this->SetColor(0, 0, 0);
     }
 
     public function Reset()
