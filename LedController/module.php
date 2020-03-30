@@ -66,7 +66,11 @@ class LedController extends IPSModule implements ILedAdapter
                 }
                 return;
             case 3:
-                $this->ModeRainbow($isInterval);
+                if(!$isInterval) {
+                    (new RainbowMode())->Start($this);
+                } else {
+                    (new RainbowMode())->Trigger($this);
+                }
                 return;
             default:
                 if(!$isInterval) {
