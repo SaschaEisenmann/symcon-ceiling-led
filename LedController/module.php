@@ -65,7 +65,7 @@ class LedController extends IPSModule
 
     private function ModeOff($isInterval) {
         if(!$isInterval) {
-            $this->SetTimerInterval('SCHEDULE', 1000);
+            $this->SetTimerInterval('SCHEDULE', 500);
         } else {
             $this->SetBatch(0, 0, 0);
         }
