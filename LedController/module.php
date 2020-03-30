@@ -185,7 +185,5 @@ class LedController extends IPSModule implements ILedAdapter
      */
     public function ReceiveData($json)
     {
-        $data = json_decode($json);
-        IPS_LogMessage("LedController", "Received Data: " . utf8_decode($data->Buffer));
     }
 }
