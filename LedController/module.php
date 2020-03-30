@@ -131,7 +131,7 @@ class LedController extends IPSModule implements iAdapter
     public function Schedule($interval, $function)
     {
         $this->scheduleFunction = $function;
-        $this->SetTimerInterval('Schedule', $$interval);
+        $this->SetTimerInterval('Schedule', $interval);
     }
 
     public function Interval() {
