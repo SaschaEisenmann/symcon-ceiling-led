@@ -209,7 +209,7 @@ class LedController extends IPSModule
 
     public function ReceiveData($text)
     {
-        IPS_LogMessage("LedController", "Received Data: " . $text);
+        IPS_LogMessage("LedController", "Received Data: " . utf8_decode($text));
     }
 
     public function Enable()
