@@ -31,7 +31,7 @@ class LedController extends IPSModule
 
     public function ReceiveData($JSONString)
     {
-        $this->IPS_LogMessage("LedController", $JSONString);
+        IPS_LogMessage("LedController", $JSONString);
     }
 
     public function Enable()
