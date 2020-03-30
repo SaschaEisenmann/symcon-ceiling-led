@@ -17,7 +17,7 @@ class LedController extends IPSModule
     {
         IPS_LogMessage("LedController", $text);
 
-        $response = $this->SendDataToParent(json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => $text->Buffer)));
+        $response = $this->SendDataToParent(json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => $text)));
 
         IPS_LogMessage("LedController", $response);
 
