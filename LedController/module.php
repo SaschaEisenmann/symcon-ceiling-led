@@ -35,15 +35,15 @@ class LedController extends IPSModule implements iAdapter
             $parameters = [];
         }
 
-        $this->SetValueInteger($this->GetIDForIdent("MODE"), $mode);
-        $this->SetValueString($this->GetIDForIdent("PARAMETERS"), json_encode($parameters));
+        SetValueInteger($this->GetIDForIdent("MODE"), $mode);
+        SetValueString($this->GetIDForIdent("PARAMETERS"), json_encode($parameters));
 
         $this->switchMode();
     }
 
     private function switchMode() {
-        $mode = $this->GetValueInteger($this->GetIDForIdent("MODE"));
-        $parameters = json_decode($this->GetValueString($this->GetIDForIdent("PARAMETERS")));
+        $mode = GetValueInteger($this->GetIDForIdent("MODE"));
+        $parameters = json_decode(GetValueString($this->GetIDForIdent("PARAMETERS")));
 
         switch ($mode) {
             case 1:
