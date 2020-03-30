@@ -2,7 +2,7 @@
 
 require_once('modes/off.php');
 require_once('modes/color.php');
-require_once('modes/colorChange.php.php');
+require_once('modes/colorChange.php');
 require_once('iAdapter.php');
 
 class LedController extends IPSModule implements iAdapter
