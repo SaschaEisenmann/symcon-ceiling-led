@@ -202,6 +202,7 @@ class LedController extends IPSModule
     public function ForwardData($text)
     {
         $data = json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => utf8_encode($text)));
+        IPS_LogMessage("LedController", $data);
         $this->SendDataToParent($data);
     }
 
