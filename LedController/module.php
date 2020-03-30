@@ -13,8 +13,8 @@ class LedController extends IPSModule implements ILedAdapter
         $this->RegisterTimer('SCHEDULE', 0, 'LEDC_TriggerInterval($_IPS[\'TARGET\']);');
 
 
-        $this->RegisterPropertyString('PARAMETERS', '',);
-        $this->RegisterPropertyString('STATE', '');
+        $this->RegisterAttributeString('PARAMETERS', '',);
+        $this->RegisterAttributeString('STATE', '');
     }
 
     public function ApplyChanges()
@@ -34,8 +34,9 @@ class LedController extends IPSModule implements ILedAdapter
             $parameters = [];
         }
 
-        IPS_SetProperty($this->InstanceID, 'MODE', $mode);
-        IPS_SetProperty($this->InstanceID, 'PARAMETERS', json_encode($parameters));
+        $this->WriteAttributeString("PARAMETERS", json_encode($parameters));
+
+        SetValueInteger($this->GetIDForIdent("MODE"), $mode);
 
         $this->TriggerMode($mode, false);
     }
@@ -155,15 +156,15 @@ class LedController extends IPSModule implements ILedAdapter
     }
 
     private function LoadParameters() {
-        return json_decode($this->ReadPropertyString('PARAMETERS'));
+        return json_decode($this->ReadAttributeString('PARAMETERS'));
     }
 
     private function LoadState() {
-        return json_decode($this->ReadPropertyString('STATE'));
+        return json_decode($this->ReadAttributeString('STATE'));
     }
 
     private function SaveState($state) {
-        IPS_SetProperty($this->InstanceID, 'STATE', json_encode($state));
+        $this->WriteAttributeString("STATE", json_encode($state));
     }
 
     private function HslToRgb($iH, $iS, $iV) {
