@@ -94,10 +94,10 @@ class LedController extends IPSModule
         $speed = 3;
 
         if(!$isInterval) {
-            $this->SetTimerInterval('SCHEDULE', 500);
+            $this->SetTimerInterval('SCHEDULE', 5000);
         } else {
             $ledColors = [];
-            for ($i = 0; $i <= $ledCount; $i++) {
+            for ($i = 0; $i < $ledCount; $i++) {
                 $ledColors[] = array(
                     'red' => 0,
                     'green' => 0,
@@ -108,7 +108,7 @@ class LedController extends IPSModule
             $state = $this->LoadState();
             $step = property_exists($state, "step") ? $state->step : 0;
 
-            for ($i = 0; $i <= $ledCount; $i++) {
+            for ($i = 0; $i < $ledCount; $i++) {
                 $hue = $i + 1 + $step;
 
                 if($hue >= 359) {
