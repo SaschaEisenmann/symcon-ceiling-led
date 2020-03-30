@@ -17,7 +17,7 @@ class LedController extends IPSModule
     {
         IPS_LogMessage("LedController", "Sending Command: " . $text);
 
-        $json = json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => $text));
+        $json = json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => utf8_encode($text)));
         IPS_LogMessage("LedController", "Sending JSON: " . $json);
         if($json === false || is_null($json)){
             $jsonError = json_last_error();
