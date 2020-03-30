@@ -101,7 +101,7 @@ class LedController extends IPSModule implements iAdapter
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
         IPS_Sleep(1);
 
-        $colorBuffer = array($red, $green, $blue);
+        $colorBuffer = array($blue, $green, $red);
         $this->ForwardData(implode(array_map("chr", $colorBuffer)));
         IPS_Sleep(5);
     }
