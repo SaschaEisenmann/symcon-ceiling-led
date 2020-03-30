@@ -1,7 +1,7 @@
 {
   "id": "{DEB49FC6-FC06-4B68-89E8-44F6A80688B3}",
   "name": "LedController",
-  "type": 1,
+  "type": 3,
   "vendor": "Sascha Eisenmann",
   "aliases": ["LED Controller"],
   "parentRequirements": ["{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}"],
