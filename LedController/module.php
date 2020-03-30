@@ -118,7 +118,7 @@ class LedController extends IPSModule
                 if($hue == 0) {
                     $hue = 1;
                 }
-
+                IPS_LogMessage("LedController", $ledColors);
                 $ledColors[$i] = $this->HslToRgb($hue, 100, 100);
             }
 
@@ -126,6 +126,7 @@ class LedController extends IPSModule
             if($step > 360) {
                 $step = 0;
             }
+
 
             $this->SetColor($ledColors);
 
