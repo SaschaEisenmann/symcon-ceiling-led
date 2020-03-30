@@ -2,10 +2,7 @@
 
 require_once('modes/off.php');
 require_once('modes/color.php');
-
-define("MODES", array(
-    new off()
-));
+require_once('iAdapter.php');
 
 class LedController extends IPSModule implements iAdapter
 {
@@ -20,10 +17,11 @@ class LedController extends IPSModule implements iAdapter
         parent::__construct($instanceId);
 
         $this->modes = [
-            new off()
+            new off(),
+            new color()
         ];
 
-        foreach (MODES as $mode) {
+        foreach ($this->modes as $mode) {
             $mode->initialize($this);
         }
     }
@@ -90,7 +88,7 @@ class LedController extends IPSModule implements iAdapter
     }
 
     private function FindMode($name) {
-        foreach (MODES as $mode) {
+        foreach ($this->modes as $mode) {
             if($mode->GetName() == $name) {
                 return $mode;
             }
