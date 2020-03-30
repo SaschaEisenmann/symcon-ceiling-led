@@ -32,13 +32,20 @@ class LedController extends IPSModule
     {
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
 
-        $this->ForwardData("ÿÿÿ");
+        $bytes = array(255, 255, 255);
+        $string = implode(array_map("chr", $bytes));
+
+        $this->ForwardData($string);
     }
 
     public function Disable()
     {
         $this->ForwardData("COMMAND_EXECUTE_SETBATCH\n");
 
-        $this->ForwardData("ÿÿÿ");
+
+        $bytes = array(0, 0, 0);
+        $string = implode(array_map("chr", $bytes));
+
+        $this->ForwardData($string);
     }
 }
