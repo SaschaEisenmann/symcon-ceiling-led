@@ -207,9 +207,10 @@ class LedController extends IPSModule
         $this->SendDataToParent($data);
     }
 
-    public function ReceiveData($text)
+    public function ReceiveData($json)
     {
-        IPS_LogMessage("LedController", "Received Data: " . utf8_decode($text));
+        $data = json_decode($json);
+        IPS_LogMessage("LedController", "Received Data: " . utf8_decode($data->Buffer));
     }
 
     public function Enable()
