@@ -136,8 +136,8 @@ class LedController extends IPSModule implements iAdapter
     }
 
     public function Interval() {
+        IPS_LogMessage("LedController", "Intervall Trigger: " . $this->scheduleFunction);
         if($this->scheduleFunction instanceof Closure) {
-            IPS_LogMessage("LedController", "Intervall Trigger: ");
             $this->scheduleFunction();
         }
     }
