@@ -94,7 +94,7 @@ class LedController extends IPSModule
         $speed = 3;
 
         if(!$isInterval) {
-            $this->SetTimerInterval('SCHEDULE', 5000);
+            $this->SetTimerInterval('SCHEDULE', 500);
         } else {
             $ledColors = [];
             for ($i = 0; $i < $ledCount; $i++) {
