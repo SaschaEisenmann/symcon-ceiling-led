@@ -21,7 +21,7 @@ class LedController extends IPSModule implements iAdapter
 
         $this->RegisterVariableInteger('MODE', 'Mode', "", 0);
         $this->RegisterVariableString('PARAMETERS', 'Parameters', "", 1);
-        $this->RegisterVariableString('STATE', 'Parameters', "", 3);
+        $this->RegisterVariableString('STATE', 'State', "", 3);
         // 0 -> Off
         // 1 -> Color
         // 2 -> ColorChange
@@ -68,7 +68,7 @@ class LedController extends IPSModule implements iAdapter
         if(!$isInterval) {
             $this->SetTimerInterval('SCHEDULE', 100);
         } else {
-            $hue = $this->LoadState()['hue'];
+            $hue = $this->LoadState()->hue;
 
             $color = $this->GetRgb($hue, 100, 100);
             $this->SetBatch($color['red'], $color['green'], $color['blue']);
