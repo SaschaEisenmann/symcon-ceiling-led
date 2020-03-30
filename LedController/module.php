@@ -1,10 +1,29 @@
 <?php
-class LedController extends IPSModule
+
+define("MODES", array(
+    new off()
+));
+
+class LedController extends IPSModule implements iAdapter
 {
+    private array $modes;
+    private iMode $activeMode;
+
+    public function __construct($instanceId)
+    {
+        parent::__construct($instanceId);
+
+        $this->modes = [
+            new off()
+        ];
+
+        foreach (MODES as $mode) {
+            $mode->initialize($this);
+        }
+    }
+
     public function Create()
     {
-        parent::Create();
-
         $this->RequireParent("{6DC3D946-0D31-450F-A8C6-C42DB8D7D4F1}");
     }
 
@@ -50,6 +69,28 @@ class LedController extends IPSModule
     {
         $this->ForwardData("RESET\n");
         IPS_Sleep(1);
+    }
+
+    public function SetMode($name, $parameters) {
+        $mode = $this->FindMode($name);
+
+        if($this->activeMode) {
+            $this->activeMode->stop();
+            $this->activeMode = null;
+        }
+
+        $this->activeMode = $mode;
+        $this->activeMode->start($parameters);
+    }
+
+    private function FindMode($name) {
+        foreach (MODES as $mode) {
+            if($mode->GetName() == $name) {
+                return $mode;
+            }
+        }
+
+        throw new Error("Mode not found");
     }
 
     public function SetColor($red, $green, $blue) {
