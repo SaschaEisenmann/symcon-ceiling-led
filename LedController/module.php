@@ -75,7 +75,7 @@ class LedController extends IPSModule implements iAdapter
         IPS_Sleep(1);
     }
 
-    public function SetMode($name, $parameters = null) {
+    public function SetMode($name, $parameters) {
         $mode = $this->FindMode($name);
 
         if($this->activeMode) {
