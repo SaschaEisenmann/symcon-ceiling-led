@@ -30,9 +30,7 @@ class LedController extends IPSModule implements ILedAdapter
         $this->RegisterAttributeString(STATE, '');
         $this->RegisterAttributeBoolean(MODE_CHANGE, false);
 
-        if ($this->HasActiveParent()) {
-            $this->Reset();
-        }
+        $this->Reset();
     }
 
     public function ApplyChanges()
@@ -179,6 +177,11 @@ class LedController extends IPSModule implements ILedAdapter
      */
     public function ForwardData($command)
     {
+        if (!$this->HasActiveParent()) {
+            IPS_LogMessage("LedController", "Not sending data because parent is not active");
+            return;
+        }
+
         $data = json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => utf8_encode($command)));
         $this->SendDataToParent($data);
     }
