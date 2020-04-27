@@ -30,7 +30,9 @@ class LedController extends IPSModule implements ILedAdapter
         $this->RegisterAttributeString(STATE, '');
         $this->RegisterAttributeBoolean(MODE_CHANGE, false);
 
-        $this->Reset();
+        if ($this->HasActiveParent()) {
+            $this->Reset();
+        }
     }
 
     public function ApplyChanges()
